@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+				        http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+				   		http://www.springframework.org/schema/context 
+				   		http://www.springframework.org/schema/context/spring-context-4.1.xsd
+				   		http://www.springframework.org/schema/aop 
+				   		http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+				        http://www.springframework.org/schema/tx 
+				        http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
+
+	<context:annotation-config />
+	
+	<!-- 配置自动扫描的包(自动注入)  
+	<context:component-scan base-package="com.yihui.*.**.service,com.ecloud.frame.platform.aspect.log" />
+	<context:component-scan base-package="com.yihui.invms.interfaces.huanxun" />
+	-->
+	<context:component-scan base-package="com.yihui" >
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Component"/>
+		<!-- 
+			Advice：向程序内部注入的代码。
+			Pointcut：注入Advice的位置，切入点，一般为某方法。
+			Advisor：Advice和Pointcut的结合单元，以便将Advice和Pointcut分开实现灵活配置。
+		 -->
+		<context:include-filter type="annotation" expression="org.aspectj.lang.annotation.Aspect"/>
+	</context:component-scan>
+	<context:property-placeholder ignore-unresolvable="true"  location="classpath*:resources/_db.properties"/> 
+	<!--创建jdbc数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close"> 
+	     <!-- 基本属性 url、user、password -->
+	    <property name="driverClassName" value="${yh.driver}" />
+	    <property name="url" value="${yh.url}" />
+	    <property name="username" value="${yh.username}" />
+	    <property name="password" value="${yh.password}" />
+	      
+	    <!-- 配置初始化大小、最小、最大 -->
+	    <property name="initialSize" value="${yh.initialSize}" />
+	    <property name="minIdle" value="${yh.minIdle}" /> 
+	    <property name="maxActive" value="${yh.maxActive}" />
+	 
+	    <!-- 配置获取连接等待超时的时间 -->
+	    <property name="maxWait" value="${yh.maxWait}" />
+	 
+	    <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+	    <property name="timeBetweenEvictionRunsMillis" value="${yh.timeBetweenEvictionRunsMillis}" />
+	 
+	    <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+	    <property name="minEvictableIdleTimeMillis" value="${yh.minEvictableIdleTimeMillis}" />
+	  
+	    <property name="validationQuery" value="SELECT 'x'" />
+	    <property name="testWhileIdle" value="${yh.testWhileIdle}" />
+	    <property name="testOnBorrow" value="${yh.testOnBorrow}" />
+	    <property name="testOnReturn" value="${yh.testOnReturn}" />
+	 
+	    <!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+	    <property name="poolPreparedStatements" value="${yh.poolPreparedStatements}" />
+	    <property name="maxPoolPreparedStatementPerConnectionSize" value="${yh.maxPoolPreparedStatementPerConnectionSize}" />
+	 
+	    <!-- 配置监控统计拦截的filters，去掉后监控界面sql无法统计 -->
+	    <property name="filters" value="${yh.filters}" /> 
+	</bean>
+	
+	
+	 <!-- 创建SqlSessionFactory，同时指定数据源  --> 
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource" />  
+        <property name="configLocation"  value="classpath:spring-mybatis.xml"/>
+          <!-- 自动配置别名
+        <property name="typeAliasesPackage" value="com.xxx.dto" />  
+         -->  
+    </bean>  
+	 <!---->
+	 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.yihui.*.**.dao"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+	
+
+	<!-- 打开aop 注解 -->
+    <aop:aspectj-autoproxy />
+	<!--    --> 
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	<!-- 事务管理 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="do*" propagation="REQUIRED" />
+			<tx:method name="*" propagation="SUPPORTS" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:advisor pointcut="execution(* *..service.impl.*.*(..))"
+			advice-ref="txAdvice" />
+	</aop:config>
+	
+<!-- 	<import resource="applications-mq.xml"/>
+ -->
+
+</beans>

@@ -1,0 +1,99 @@
+package com.ecloud.framework.dao.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.ecloud.frame.platform.dao.BaseDAO;
+import com.ecloud.framework.model.ValueObject;
+
+public abstract class BaseDAOImpl<T extends ValueObject> implements BaseDAO<T> {
+	
+	private static final long serialVersionUID = 1L;
+	
+	@Autowired
+	protected SqlSessionTemplate sqlSessionTemplate;
+
+	public abstract String getNameSpace();
+	
+	@Override
+	public int doInsertByBean(T bean){
+		return sqlSessionTemplate.insert(this.getNameSpace()+".doInsertByBean", bean);
+		
+	}
+	
+	@Override
+	public int doBatchInsertByList(List<T> list){
+		return sqlSessionTemplate.insert(this.getNameSpace()+".doBatchInsertByList", list);
+		
+	}
+	
+	@Override
+	public int doInsertByMap(Map<String,Object> param){
+		return sqlSessionTemplate.insert(this.getNameSpace()+".doInsertByMap", param);
+		
+	}
+	
+	@Override
+	public int doDeleteByBean(T bean){
+		return sqlSessionTemplate.delete(this.getNameSpace()+".doDeleteByBean",bean);
+	}
+	
+	
+	@Override
+	public int doDeleteById(long id){
+		return sqlSessionTemplate.delete(this.getNameSpace()+".doDeleteById",id);
+	}
+	
+	@Override
+	public int doDeleteByMap(Map<String,Object> param){
+		
+		return sqlSessionTemplate.delete(this.getNameSpace()+".doDeleteByMap",param);
+	}
+	
+	
+	@Override
+	public int doUpdateByBean(T bean){
+		return sqlSessionTemplate.update(this.getNameSpace()+".doUpdateByBean", bean);
+	}
+	
+	@Override
+	public int doBatchUpdateByList(List<T> list){
+		return sqlSessionTemplate.update(this.getNameSpace()+".doBatchUpdateByList", list);
+	}
+	
+	@Override
+	public int doUpdateByMap(Map<String,Object> param){
+		return sqlSessionTemplate.update(this.getNameSpace()+".doUpdateByMap", param);
+	}
+
+	
+	@Override
+	public T doFindById(long id){
+		return sqlSessionTemplate.selectOne(this.getNameSpace()+".doFindById", id);
+	}
+	
+	@Override
+	public T doFindByBean(T bean){
+		return sqlSessionTemplate.selectOne(this.getNameSpace()+".doFindByBean", bean);
+	}
+	
+	@Override
+	public List<T> doSearchListByBean(T bean){
+		return sqlSessionTemplate.selectList(this.getNameSpace()+".doSearchListByBean",bean);
+	}
+	
+	
+	@Override
+	public List<T> doSearchListByMap(Map<String,Object> param){
+		return sqlSessionTemplate.selectList(this.getNameSpace()+".doSearchListByMap",param);
+	}
+	
+	
+	
+
+	
+	
+}
