@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dream.home.article.dao.ArticleDAO">
+		<!--1.查询条件-->
+	<sql id="SQL_CONDITION">
+		<if test="rowId != null and rowId != '' ">
+		 and ama.row_id = #{rowId}
+		</if>
+		<if test="articleName != null and articleName != '' ">
+		 and ama.article_name = #{articleName}
+		</if>
+		<if test="categoryCode != null and categoryCode != '' ">
+		 and ama.CATEGORY_CODE = #{categoryCode}
+		</if>
+		<if test="tags != null and tags != '' ">
+		 and ama.tags = #{tags}
+		</if>
+		<if test="showImage != null and showImage != '' ">
+		 and ama.show_image = #{showImage}
+		</if>
+		<if test="content != null and content != '' ">
+		 and ama.content = #{content}
+		</if>
+		<if test="shareTimes != null and shareTimes != '' ">
+		 and ama.share_times = #{shareTimes}
+		</if>
+		<if test="loveTimes != null and loveTimes != '' ">
+		 and ama.love_times = #{loveTimes}
+		</if>
+		<if test="browseTimes != null and browseTimes != '' ">
+		 and ama.browse_times = #{browseTimes}
+		</if>
+		<if test="author != null and author != '' ">
+		 and ama.author = #{author}
+		</if>
+		<if test="status != null and status != '' ">
+		 and ama.status = #{status}
+		</if>
+		<if test="toTop != null and toTop != '' ">
+		 and ama.to_top = #{toTop}
+		</if>
+		<if test="publishTime != null and publishTime != '' ">
+		 and ama.publish_time = #{publishTime}
+		</if>
+		<if test="deletedFlag != null and deletedFlag != '' ">
+		 and ama.deleted_flag = #{deletedFlag}
+		</if>
+		<if test="createTime != null and createTime != '' ">
+		 and ama.create_time = #{createTime}
+		</if>
+		<if test="remark != null and remark != '' ">
+		 and ama.remark = #{remark}
+		</if>
+	</sql>
+
+	<!--2.查询内容-->
+	<sql id="SQL_CONTENT">
+		ama.row_id rowId,
+		ama.article_name articleName,
+		ama.category_code categoryCode,
+		ama.tags tags,
+		ama.show_image showImage,
+		ama.share_times shareTimes,
+		ama.love_times loveTimes,
+		ama.browse_times browseTimes,
+		ama.author author,
+		ama.status status,
+		ama.to_top toTop,
+		ama.publish_time publishTime,
+		ama.deleted_flag deletedFlag,
+		ama.create_user_id createUserId,
+		DATE_FORMAT(ama.create_time,'%Y-%m-%d') createTime,
+		ama.last_upd_id lastUpdId,
+		ama.last_upd_time lastUpdTime,
+		ama.remark remark
+	</sql> 
+
+	<!--3.查询记录数-->
+	<select id="doSearchCount" parameterType="ArticleVO" resultType="java.lang.Integer">
+		SELECT COUNT(0) AS _COUNT FROM am_article ama WHERE 1=1 AND DELETED_FLAG = 'N'
+		<include refid="SQL_CONDITION"/>
+	</select>
+
+	<!--4.按条件查询记录-->
+	<select id="doSearchListByVO" parameterType="ArticleVO"  resultType="ArticleVO"> 
+		SELECT 
+			<include refid="SQL_CONTENT"/>,
+			<![CDATA[ case when (LOCATE('<pre',content)-1 > 180 or LOCATE('<pre',content)-1 <0) then LEFT(content,180)   ELSE LEFT(content,LOCATE('<pre',content)-1) END content ]]>,
+			aac.CATEGORY_NAME categoryName
+		FROM am_article ama  
+		LEFT JOIN am_category aac ON(aac.category_code=ama.category_code AND aac.DELETED_FLAG='N' )
+		WHERE ama.DELETED_FLAG = 'N' 
+		<include refid="SQL_CONDITION"/>
+		ORDER BY ama.create_time DESC,ama.article_name 
+	</select>
+
+	<!--5.根据ID查询记录-->
+	<select id="doFindById" parameterType="ArticleVO"  resultType="ArticleVO">  
+		SELECT 
+		<include refid="SQL_CONTENT"/>,
+		ama.content content
+		FROM am_article ama 
+		WHERE ama.DELETED_FLAG = 'N' AND  ama.ROW_ID = #{value} 
+	</select>
+
+	<!--6.按照VO插入-->
+	<insert  id="doInsertByVO"  parameterType="ArticleVO"> 
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="rowId">
+			SELECT E_SEQ('am_article') AS rowId FROM DUAL
+		</selectKey>
+		INSERT INTO am_article(row_id,article_name,category_code,tags,show_image,content,share_times,love_times,browse_times,author,status,to_top,publish_time,deleted_flag,create_user_id,create_time,last_upd_id,last_upd_time,remark)
+		VALUES(#{rowId},#{articleName},#{categoryCode},#{tags},#{showImage},#{content},#{shareTimes},#{loveTimes},#{browseTimes},#{author},'D',#{toTop},#{publishTime},'N',#{createUserId},NOW(),#{lastUpdId},#{lastUpdTime},#{remark})
+	 </insert>
+
+	<!--7.批量插入-->
+	<insert  id="doBatchInsertByList"  parameterType="java.util.List"> 
+		INSERT INTO am_article(row_id,article_name,category_code,tags,show_image,content,share_times,love_times,browse_times,author,status,to_top,publish_time,deleted_flag,create_user_id,create_time,last_upd_id,last_upd_time,remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+			(E_SEQ('am_article'),#{item.articleName},#{item.categoryCode},#{item.tags},#{item.showImage},#{item.content},#{item.shareTimes},#{item.loveTimes},#{item.browseTimes},#{item.author},#{item.status},#{item.toTop},#{item.publishTime},'N',#{item.createUserId},NOW(),#{item.lastUpdId},NOW(),#{item.remark})
+		</foreach>
+	</insert>
+
+	<!--8.按主键逻辑删除-->
+	<update id="doDeleteById"  parameterType="Long"> 
+		UPDATE  am_article ama SET ama.DELETED_FLAG = 'Y'  WHERE 1=1   AND ama.ROW_ID = #{value} 
+	</update>
+
+	<!--9.按复合条件逻辑更新-->
+	<update  id="doUpdateByVO"  parameterType="ArticleVO"> 
+		UPDATE   am_article  
+		<set>
+			<if test="articleName != null">article_name=#{articleName},</if>
+			<if test="showImage != null">show_image=#{showImage},</if>
+			<if test="content != null">content=#{content}</if>
+		</set>
+		WHERE  ROW_ID = #{rowId}
+	</update>
+	<!--9.按复合条件逻辑更新-->
+	<update  id="doUpdateByMap"  parameterType="java.util.Map"> 
+		UPDATE   am_article  
+		<set>
+			browse_times = browse_times + 1
+		</set>
+		WHERE  ROW_ID = #{rowId}
+	</update>
+	<!--查询前十条-->
+	<select id="doSearchTop" parameterType="ArticleVO"  resultType="ArticleVO"> 
+		SELECT 
+			<include refid="SQL_CONTENT"/>,
+			aac.CATEGORY_NAME categoryName
+		FROM am_article ama  
+		LEFT JOIN am_category aac ON(aac.category_code=ama.category_code AND aac.DELETED_FLAG='N' )
+		WHERE ama.DELETED_FLAG = 'N' 
+		<include refid="SQL_CONDITION"/>
+		ORDER BY ama.create_time DESC,ama.article_name  
+		LIMIT 1,10
+	</select>
+	
+	<select id="doSearchHots"  resultType="ArticleVO"> 
+		SELECT 
+			ama.row_id rowId,	
+			ama.ARTICLE_NAME articleName,
+			ama.browse_times browseTimes,
+			ama.show_image showImage,
+			ama.share_times shareTimes,
+			ama.love_times loveTimes,
+			IFNULL(tmp.mcount,0) mcount
+		FROM am_article ama  
+		LEFT JOIN 
+		(SELECT amc.article_id,SUM(1) mcount FROM am_comment amc  WHERE amc.DELETED_FLAG = 'N' GROUP BY  amc.article_id ) tmp ON(ama.ROW_ID = tmp.article_id)		
+		WHERE ama.DELETED_FLAG = 'N'
+		ORDER BY ama.browse_times DESC ,mcount DESC ,ama.love_times DESC ,ama.share_times DESC 
+		LIMIT 0,5 
+	</select>
+</mapper>

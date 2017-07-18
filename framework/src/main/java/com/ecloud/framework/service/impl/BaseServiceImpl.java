@@ -3,9 +3,13 @@ package com.ecloud.framework.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.ecloud.framework.dao.BaseDAO;
 import com.ecloud.framework.model.ValueObject;
 import com.ecloud.framework.service.BaseService;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 
 public abstract class BaseServiceImpl<T extends ValueObject>  implements BaseService<T>{
 
@@ -84,7 +88,54 @@ public abstract class BaseServiceImpl<T extends ValueObject>  implements BaseSer
 		return getBaseDAO().doSearchListByMap( map);
 	}
 	
-
+	@Override
+	public PageInfo<T> doSearchPage(T vo) {
+		String orderStr = "";
+		if(StringUtils.isNotEmpty(vo.getOrderName())){
+			orderStr = vo.getOrderName() +" " +vo.getOrderRule();
+		}
+		return this.doSearchPage(vo, orderStr, vo.getPageNum(), vo.getPageSize());
+	}
+	
+	@Override
+	public PageInfo<T> doSearchPage(T vo,int pageNum, int pageSize) {
+		String orderStr = "";
+		if(StringUtils.isNotEmpty(vo.getOrderName())){
+			orderStr = vo.getOrderName() +" " +vo.getOrderRule();
+		}
+		return this.doSearchPage(vo, orderStr, pageNum, pageSize);
+	}
+	
+	
+	@Override
+	public PageInfo<T> doSearchPage(T vo,String orderStr,int pageNum, int pageSize) {
+		if(!"".equals(orderStr.trim())){
+			PageHelper.startPage(pageNum, pageSize,orderStr);
+		}else{
+			PageHelper.startPage(pageNum, pageSize);
+		}
+		List<T> list = this.getBaseDAO().doSearchListByVO(vo);
+		PageInfo<T> page = new PageInfo<T>(list);
+		return page;
+	}
+	
+	
+	@Override
+	public PageInfo<T> doSearchPage(Map<String, Object> map,int pageNum, int pageSize)  {
+		return this.doSearchPage(map, "", pageNum, pageSize);
+	}
+	
+	@Override
+	public PageInfo<T> doSearchPage(Map<String, Object> map,String orderStr,int pageNum, int pageSize) {
+		if(!"".equals(orderStr.trim())){
+			PageHelper.startPage(pageNum, pageSize,orderStr);
+		}else{
+			PageHelper.startPage(pageNum, pageSize);
+		}
+		List<T> list = this.getBaseDAO().doSearchListByMap(map);
+		PageInfo<T> page = new PageInfo<T>(list);
+		return page;
+	}
 
 
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.ecloud.framework.model.ValueObject;
+import com.github.pagehelper.PageInfo;
 
 
 public interface BaseService <T extends ValueObject> {
@@ -35,5 +36,17 @@ public interface BaseService <T extends ValueObject> {
 	public List<T> doSearchListByVO(T vo);
 	
 	public List<T> doSearchListByMap(Map<String, Object> map);
+	
+	
+	public PageInfo<T> doSearchPage(T vo) ;
+	
+	public PageInfo<T> doSearchPage(T vo,int pageNum, int pageSize) ;
+
+	public PageInfo<T> doSearchPage(T vo,String orderStr,int pageNum, int pageSize);
+
+	public PageInfo<T> doSearchPage(Map<String, Object> map,int pageNum, int pageSize);
+	
+	public PageInfo<T> doSearchPage(Map<String, Object> map, String orderStr,int pageNum, int pageSize);
+
 
 }

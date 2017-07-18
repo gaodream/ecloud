@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dream.home.category.dao.CategoryDAO">
+	<!--1.查询条件-->
+	<sql id="SQL_CONDITION">
+		<if test="rowId != null and rowId != '' ">
+		 and amg.row_id = #{rowId}
+		</if>
+		<if test="categoryCode != null and categoryCode != '' ">
+		 and amg.category_code = #{categoryCode}
+		</if>
+		<if test="categoryName != null and categoryName != '' ">
+		 and amg.category_name = #{categoryName}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+		 and amg.parent_id = #{parentId}
+		</if>
+		<if test="deletedFlag != null and deletedFlag != '' ">
+		 and amg.deleted_flag = #{deletedFlag}
+		</if>
+		<if test="createUserId != null and createUserId != '' ">
+		 and amg.create_user_id = #{createUserId}
+		</if>
+		<if test="createTime != null and createTime != '' ">
+		 and amg.create_time = #{createTime}
+		</if>
+		<if test="lastOperatorId != null and lastOperatorId != '' ">
+		 and amg.last_operator_id = #{lastOperatorId}
+		</if>
+		<if test="lastOperateTime != null and lastOperateTime != '' ">
+		 and amg.last_operate_time = #{lastOperateTime}
+		</if>
+		<if test="remark != null and remark != '' ">
+		 and amg.remark = #{remark}
+		</if>
+	</sql>
+
+	<!--2.查询内容-->
+	<sql id="SQL_CONTENT">
+		amg.row_id rowId,
+		amg.category_code categoryCode,
+		amg.category_name categoryName,
+		amg.parent_id parentId,
+		amg.deleted_flag deletedFlag,
+		amg.create_user_id createUserId,
+		amg.create_time createTime,
+		amg.last_operator_id lastOperatorId,
+		amg.last_operate_time lastOperateTime,
+		amg.remark remark
+	</sql>
+
+	<!--3.查询记录数-->
+	<select id="doSearchCount" parameterType="CategoryVO" resultType="java.lang.Integer">
+		SELECT COUNT(0) AS _COUNT FROM am_category amg WHERE 1=1 AND DELETED_FLAG = 'N'
+		<include refid="SQL_CONDITION"/>
+	</select>
+
+	<!--4.按条件查询记录-->
+	<select id="doSearchListByVO" parameterType="CategoryVO"  resultType="CategoryVO"> 
+		SELECT 
+			<include refid="SQL_CONTENT"/>
+		FROM am_category amg  WHERE amg.DELETED_FLAG = 'N' 
+			<include refid="SQL_CONDITION"/>
+	</select>
+
+	<!--5.根据ID查询记录-->
+	<select id="doFindById" parameterType="CategoryVO"  resultType="CategoryVO">  
+		SELECT 
+		<include refid="SQL_CONTENT"/>
+		FROM am_category amg 
+		WHERE amg.DELETED_FLAG = 'N' AND  amg.ROW_ID = #{value} 
+	</select>
+
+	<!--6.按照VO插入-->
+	<insert  id="doInsertByVO"  parameterType="CategoryVO"> 
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="rowId">
+			SELECT DEFAULT_SEQ('DEFAULT') AS rowId FROM DUAL
+		</selectKey>
+		INSERT INTO am_category(row_id,category_code,category_name,parent_id,deleted_flag,create_user_id,create_time,last_operator_id,last_operate_time,remark)
+		VALUES(#{rowId},#{categoryCode},#{categoryName},#{parentId},#{deletedFlag},#{createUserId},NOW(),#{lastOperatorId},#{lastOperateTime},#{remark})
+	 </insert>
+
+	<!--7.批量插入-->
+	<insert  id="doBatchInsertByList"  parameterType="java.util.List"> 
+		INSERT INTO am_category(row_id,category_code,category_name,parent_id,deleted_flag,create_user_id,create_time,last_operator_id,last_operate_time,remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.rowId},#{item.categoryCode},#{item.categoryName},#{item.parentId},#{item.deletedFlag},#{item.createUserId},NOW(),#{item.lastOperatorId},#{item.lastOperateTime},#{item.remark})
+		</foreach>
+	</insert>
+
+	<!--8.按主键逻辑删除-->
+	<update id="doDeleteById"  parameterType="Long"> 
+		UPDATE  am_category amg SET amg.DELETED_FLAG = 'Y'  WHERE 1=1   AND amg.ROW_ID = #{value} 
+	</update>
+
+	<!--9.按复合条件逻辑更新-->
+	<update  id="doUpdateByVO"  parameterType="CategoryVO"> 
+		UPDATE   am_category  
+		<set>
+			<if test="rowId != null">row_id=#{rowId},</if>
+			<if test="categoryCode != null">category_code=#{categoryCode},</if>
+			<if test="categoryName != null">category_name=#{categoryName},</if>
+			<if test="parentId != null">parent_id=#{parentId},</if>
+			<if test="deletedFlag != null">deleted_flag=#{deletedFlag},</if>
+			<if test="createUserId != null">create_user_id=#{createUserId},</if>
+			<if test="createTime != null">create_time=#{createTime},</if>
+			<if test="lastOperatorId != null">last_operator_id=#{lastOperatorId},</if>
+			<if test="lastOperateTime != null">last_operate_time=#{lastOperateTime},</if>
+			<if test="remark != null">remark=#{remark}</if>
+		</set>
+		WHERE  ROW_ID = #{rowId}
+	</update>
+
+	<!--10.批量修改-->
+	<update id="doBatchUpdateByList"  parameterType="java.util.List">
+		INSERT INTO am_category(row_id,category_code,category_name,parent_id,deleted_flag,create_user_id,create_time,last_operator_id,last_operate_time,remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.rowId},#{item.categoryCode},#{item.categoryName},#{item.parentId},#{item.deletedFlag},#{item.createUserId},NOW(),#{item.lastOperatorId},#{item.lastOperateTime},#{item.remark})
+		</foreach>
+		ON DUPLICATE KEY UPDATE   
+			row_id = VALUES(row_id),
+			category_code = VALUES(category_code),
+			category_name = VALUES(category_name),
+			parent_id = VALUES(parent_id),
+			deleted_flag = VALUES(deleted_flag),
+			create_user_id = VALUES(create_user_id),
+			create_time = VALUES(create_time),
+			last_operator_id = VALUES(last_operator_id),
+			last_operate_time = VALUES(last_operate_time),
+			remark = VALUES(remark)
+	</update>
+</mapper>

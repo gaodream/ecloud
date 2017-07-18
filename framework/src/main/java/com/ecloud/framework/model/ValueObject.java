@@ -11,7 +11,7 @@ public abstract class ValueObject implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int pageSize = 10;// ==pageSize
-	private int pageIndex = 1;
+	private int pageNum = 1;
 	private String orderName;
 	private String orderRule;
 
@@ -41,22 +41,13 @@ public abstract class ValueObject implements Serializable {
 		this.pageSize = pageSize;
 	}
 
-	public int getPageIndex() {
-		return pageIndex;
+	public int getPageNum() {
+		return pageNum;
 	}
 
-	public void setPageIndex(int pageIndex) {
-		this.pageIndex = pageIndex;
+	public void setPageNum(int pageNum) {
+		this.pageNum = pageNum;
 	}
-
-	public int getStart() {
-		if(pageIndex==1){
-			return 0;
-		}else{
-			return (pageIndex-1) * pageSize;
-		}
-	}
-
 
 	public Map<String, Object> getCustomCondition() {
 		return null;

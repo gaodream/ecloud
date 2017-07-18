@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dream.home.comment.dao.CommentDAO">
+	<!--1.查询条件-->
+	<sql id="SQL_CONDITION">
+		<if test="rowId != null and rowId != '' ">
+		 and amc.row_id = #{rowId}
+		</if>
+		<if test="articleId != null and articleId != '' ">
+		 and amc.article_id = #{articleId}
+		</if>
+		<if test="content != null and content != '' ">
+		 and amc.content = #{content}
+		</if>
+		<if test="userId != null and userId != '' ">
+		 and amc.user_id = #{userId}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+		 and amc.parent_id = #{parentId}
+		</if>
+		<if test="deletedFlag != null and deletedFlag != '' ">
+		 and amc.deleted_flag = #{deletedFlag}
+		</if>
+		<if test="createUserId != null and createUserId != '' ">
+		 and amc.create_user_id = #{createUserId}
+		</if>
+		<if test="createTime != null and createTime != '' ">
+		 and amc.create_time = #{createTime}
+		</if>
+		<if test="remark != null and remark != '' ">
+		 and amc.remark = #{remark}
+		</if>
+	</sql>
+
+	<!--2.查询内容-->
+	<sql id="SQL_CONTENT">
+ 		amc.row_id rowId,
+		amc.article_id articleId,
+		amc.content content,
+		amc.user_id userId,
+		amc.parent_id parentId,
+		amc.deleted_flag deletedFlag,
+		amc.create_user_id createUserId,
+		amc.create_time createTime,
+		amc.remark remark
+	</sql>
+
+	<!--3.查询记录数-->
+	<select id="doSearchCount" parameterType="CommentVO" resultType="java.lang.Integer">
+		SELECT COUNT(0) AS _COUNT FROM am_comment amc WHERE 1=1 AND DELETED_FLAG = 'N'
+		<include refid="SQL_CONDITION"/>
+	</select>
+
+	<!--4.按条件查询记录-->
+	<select id="doSearchListByVO" parameterType="CommentVO"  resultType="CommentVO"> 
+		SELECT 
+			<include refid="SQL_CONTENT"/>,
+			ama.article_name articleName,
+			ama.CATEGORY_CODE categoryCode,
+			amca.CATEGORY_NAME categoryName
+		FROM am_comment amc 
+		LEFT JOIN am_article ama ON (amc.ARTICLE_ID = ama.ROW_ID) 
+		LEFT JOIN am_category amca ON (ama.CATEGORY_CODE = amca.CATEGORY_CODE) 
+		WHERE amc.DELETED_FLAG = 'N' AND  ama.DELETED_FLAG = 'N'
+		<include refid="SQL_CONDITION"/>
+	</select>
+
+	<!--5.根据ID查询记录-->
+	<select id="doFindById" parameterType="CommentVO"  resultType="CommentVO">  
+		SELECT 
+		<include refid="SQL_CONTENT"/>
+		FROM am_comment amc 
+		WHERE amc.DELETED_FLAG = 'N' AND  amc.ROW_ID = #{value} 
+	</select>
+
+	<!--6.按照VO插入-->
+	<insert  id="doInsertByVO"  parameterType="CommentVO"> 
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="rowId">
+			SELECT DEFAULT_SEQ('DEFAULT') AS rowId FROM DUAL
+		</selectKey>
+		INSERT INTO am_comment(row_id,article_id,content,user_id,parent_id,deleted_flag,create_user_id,create_time,remark)
+		VALUES(#{rowId},#{articleId},#{content},#{userId},#{parentId},#{deletedFlag},#{createUserId},NOW(),#{remark})
+	 </insert>
+
+	<!--7.批量插入-->
+	<insert  id="doBatchInsertByList"  parameterType="java.util.List"> 
+		INSERT INTO am_comment(row_id,article_id,content,user_id,parent_id,deleted_flag,create_user_id,create_time,remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.rowId},#{item.articleId},#{item.content},#{item.userId},#{item.parentId},#{item.deletedFlag},#{item.createUserId},NOW(),#{item.remark})
+		</foreach>
+	</insert>
+
+	<!--8.按主键逻辑删除-->
+	<update id="doDeleteById"  parameterType="Long"> 
+		UPDATE  am_comment amc SET amc.DELETED_FLAG = 'Y'  WHERE 1=1   AND amc.ROW_ID = #{value} 
+	</update>
+
+	<!--9.按复合条件逻辑更新-->
+	<update  id="doUpdateByVO"  parameterType="CommentVO"> 
+		UPDATE   am_comment  
+		<set>
+			<if test="rowId != null">row_id=#{rowId},</if>
+			<if test="articleId != null">article_id=#{articleId},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="userId != null">user_id=#{userId},</if>
+			<if test="parentId != null">parent_id=#{parentId},</if>
+			<if test="deletedFlag != null">deleted_flag=#{deletedFlag},</if>
+			<if test="createUserId != null">create_user_id=#{createUserId},</if>
+			<if test="createTime != null">create_time=#{createTime},</if>
+			<if test="remark != null">remark=#{remark}</if>
+		</set>
+		WHERE  ROW_ID = #{rowId}
+	</update>
+
+	<!--10.批量修改-->
+	<update id="doBatchUpdateByList"  parameterType="java.util.List">
+		INSERT INTO am_comment(row_id,article_id,content,user_id,parent_id,deleted_flag,create_user_id,create_time,remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.rowId},#{item.articleId},#{item.content},#{item.userId},#{item.parentId},#{item.deletedFlag},#{item.createUserId},NOW(),#{item.remark})
+		</foreach>
+		ON DUPLICATE KEY UPDATE   
+			row_id = VALUES(row_id),
+			article_id = VALUES(article_id),
+			content = VALUES(content),
+			user_id = VALUES(user_id),
+			parent_id = VALUES(parent_id),
+			deleted_flag = VALUES(deleted_flag),
+			create_user_id = VALUES(create_user_id),
+			create_time = VALUES(create_time),
+			remark = VALUES(remark)
+	</update>
+</mapper>
