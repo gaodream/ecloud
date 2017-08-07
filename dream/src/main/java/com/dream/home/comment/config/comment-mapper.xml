@@ -40,6 +40,8 @@
 		amc.user_id userId,
 		amc.parent_id parentId,
 		amc.deleted_flag deletedFlag,
+		amc.create_user createUser,
+		amc.email email,
 		amc.create_user_id createUserId,
 		amc.create_time createTime,
 		amc.remark remark
@@ -76,20 +78,13 @@
 	<!--6.按照VO插入-->
 	<insert  id="doInsertByVO"  parameterType="CommentVO"> 
 		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="rowId">
-			SELECT DEFAULT_SEQ('DEFAULT') AS rowId FROM DUAL
+			SELECT E_SEQ('md_seq') AS rowId FROM DUAL
 		</selectKey>
-		INSERT INTO am_comment(row_id,article_id,content,user_id,parent_id,deleted_flag,create_user_id,create_time,remark)
-		VALUES(#{rowId},#{articleId},#{content},#{userId},#{parentId},#{deletedFlag},#{createUserId},NOW(),#{remark})
+		INSERT INTO am_comment(row_id,article_id,content,user_id,parent_id,deleted_flag,email,create_user,create_user_id,create_time,remark)
+		VALUES(#{rowId},#{articleId},#{content},#{userId},#{parentId},'N',#{email},#{createUser},#{createUserId},NOW(),#{remark})
 	 </insert>
 
-	<!--7.批量插入-->
-	<insert  id="doBatchInsertByList"  parameterType="java.util.List"> 
-		INSERT INTO am_comment(row_id,article_id,content,user_id,parent_id,deleted_flag,create_user_id,create_time,remark)
-		VALUES
-		<foreach collection="list" item="item" index="index" separator="," >
-			(#{item.rowId},#{item.articleId},#{item.content},#{item.userId},#{item.parentId},#{item.deletedFlag},#{item.createUserId},NOW(),#{item.remark})
-		</foreach>
-	</insert>
+
 
 	<!--8.按主键逻辑删除-->
 	<update id="doDeleteById"  parameterType="Long"> 

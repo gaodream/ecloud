@@ -4,22 +4,25 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.ibatis.io.VFS;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.ecloud.framework.filter.AccessFilter;
@@ -50,7 +53,7 @@ public class ApplicationConfig implements EnvironmentAware {
 		resolver.setPrefix(env.getProperty("spring.mvc.view.prefix"));
 		resolver.setSuffix(env.getProperty("spring.mvc.view.suffix"));
 		return resolver;
-	}*/
+	}
 	@Bean
 	public FreeMarkerViewResolver freeMarkerViewResolver() {
 		FreeMarkerViewResolver resolver = new FreeMarkerViewResolver();
@@ -59,12 +62,13 @@ public class ApplicationConfig implements EnvironmentAware {
 		resolver.setContentType("text/html; charset=UTF-8");
 		resolver.setRequestContextAttribute("request");
 		return resolver;
-	}
+	}*/
 
 	/**
      * 创建数据源
      */
     @Bean(name="dataSource",destroyMethod = "close", initMethod="init") 
+    @Primary
     public DataSource getDataSource() throws Exception{
         Properties props = new Properties();
         props.put("driverClassName", env.getProperty("spring.datasource.driver-class-name"));
@@ -78,7 +82,16 @@ public class ApplicationConfig implements EnvironmentAware {
      * 根据数据源创建SqlSessionFactory
      */
     @Bean(name="sqlSessionFactory")
-    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception{
+    public SqlSessionFactory sqlSessionFactory(@Qualifier("dataSource") DataSource dataSource) throws Exception{
+    	
+    	//直接在ide上运行都是ok的，但是经过打包成jar包后，就一直报错提示找打不到对应的bean或者对应的mapper
+    	/*解决办法：
+
+    	通过mybatis-configuration.xml进行配置
+    	通过SpringBootVFS进行自动扫描配置（推荐）
+    	*/
+    	VFS.addImplClass(SpringBootVFS.class);
+    	
         SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);//指定数据源(这个必须有，否则报错)
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();

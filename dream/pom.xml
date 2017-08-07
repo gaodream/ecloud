@@ -8,8 +8,8 @@
 		<artifactId>ecloud</artifactId>
 		<version>1.0.RELEASE</version>
 	</parent>
-	<artifactId>ttt</artifactId>
-	<name>ttt</name>
+	<artifactId>dream</artifactId>
+	<name>dream</name>
 	<packaging>jar</packaging>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -29,22 +29,49 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-core</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-spring</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <build>
+       <resources>  
+	    	<resource>  
+	            <directory>src/main/resources</directory>  
+	            <includes>  
+	                <include>**/*.properties</include>  
+	                <include>**/*.xml</include>  
+	            </includes>  
+	            <filtering>true</filtering>  
+	        </resource> 
+	        <resource>  
+	            <directory>src/main/java</directory>  
+	            <includes>  
+	                <include>**/*.xml</include>  
+	            </includes>  
+	            <filtering>true</filtering>  
+	        </resource>  
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>1.5.3.RELEASE</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

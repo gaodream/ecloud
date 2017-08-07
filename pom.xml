@@ -15,9 +15,7 @@
 		<module>event</module>
 		<module>agent</module>
 		<module>dream</module>
-    <module>gen</module>
-    <module>ipsgen</module>
-    <module>ttt</module>
+    	<module>gen</module>
   </modules>
 	<build>
 		<plugins>

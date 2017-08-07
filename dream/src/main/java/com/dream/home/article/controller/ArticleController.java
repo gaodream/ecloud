@@ -1,32 +1,41 @@
 package com.dream.home.article.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.dream.home.article.model.ArticleVO;
 import com.dream.home.article.service.ArticleService;
 import com.dream.home.category.service.CategoryService;
-import com.ecloud.framework.common.EResponse;
+import com.dream.home.comment.model.CommentVO;
+import com.dream.home.comment.service.CommentService;
+import com.dream.home.link.model.LinkVO;
+import com.dream.home.link.service.LinkService;
+import com.dream.home.log.model.LogVO;
+import com.dream.home.log.service.LogService;
 import com.ecloud.framework.controller.BaseRestController;
-import com.github.pagehelper.PageInfo;
+import com.ecloud.framework.model.EResponse;
 
-@Controller
+@RestController
 @RequestMapping("/article/")
 public class ArticleController  extends BaseRestController<ArticleVO>{
 
 	@Autowired
 	private ArticleService articleService;
+	@Autowired
+	private LinkService linkService;
+	@Autowired
+	private CommentService commentService;
+	@Autowired
+	private LogService logService;
 
 	@Override
 	public ArticleService getBaseService() {
@@ -34,44 +43,48 @@ public class ArticleController  extends BaseRestController<ArticleVO>{
 	}
 	
 	@GetMapping("{cgCode}")
-	public ModelAndView gotoCategory(@PathVariable String cgCode){
-		ModelAndView mav = new ModelAndView();
-		mav.addObject(cgCode,"nav-this");
-		if("about".equals(cgCode.trim())){
-			mav.setViewName("views/about");
-		}else{
-			ArticleVO artVO = new ArticleVO();
-			artVO.setCategoryCode(cgCode);
-			PageInfo<ArticleVO> page = articleService.doSearchPage(artVO);
-			mav.addObject("page", page);
-			mav.addObject("cgCode", cgCode);
-			mav.setViewName("views/article");
-		}
-		return mav;
+	public EResponse gotoCategory(@PathVariable String cgCode){
+		EResponse result = EResponse.build();
+		ArticleVO artVO = new ArticleVO();
+		artVO.setCategoryCode(cgCode);
+		result.setResult(articleService.doSearchPage(artVO));
+		return result;
 	}
 	
 	
 	@PostMapping("list")
-	public ModelAndView doSearchPage(ArticleVO artVO){
-		ModelAndView mav = new ModelAndView();
-		String cgCode = artVO.getCategoryCode();
-		mav.addObject(cgCode,"nav-this");
-		mav.addObject("cgCode", cgCode);
-		PageInfo<ArticleVO> page = articleService.doSearchPage(artVO);
-		mav.addObject("page", page);
-		mav.setViewName("views/article");
-		return mav;
+	public EResponse doSearchPage(@RequestBody ArticleVO artVO){
+		EResponse result = EResponse.build();
+		result.setResult(articleService.doSearchPage(artVO));
+		return result;
 	}
 	
 	@GetMapping("detail/{id}")
-	public ModelAndView detail(@PathVariable int id){
-		ModelAndView mav = new ModelAndView("views/detail");
+	public EResponse detail(@PathVariable int id){
+		EResponse result = EResponse.build();
 		Map<String,Object> param = new HashMap<String,Object>();
 		param.put("rowId", id);
 		//更新浏览次数
 		articleService.doUpdateByMap(param);
-		mav.addObject("article", articleService.doFindById(id));
-		return mav;
+		result.setResult(articleService.doFindById(id));
+		return result;
+	}
+	
+	/**
+	 * 博客统计
+	 */
+	@GetMapping("count")
+	public EResponse count(){
+		EResponse result = EResponse.build();
+		Map<String,Object> data = new HashMap<String,Object>();
+		data.put("hots", articleService.doSearchHots());
+		data.put("links", linkService.doSearchListByVO(new LinkVO()));
+		data.put("comments", commentService.doSearchPage(new CommentVO(), 1, 10));
+		data.put("browseCounts", logService.doSearchCount(new LogVO()));
+		data.put("articleCounts", articleService.doSearchCount(new ArticleVO()));
+		
+		result.setResult(data);
+		return result;
 	}
 	/*************************	后台部分	****************************/
 	
@@ -79,18 +92,19 @@ public class ArticleController  extends BaseRestController<ArticleVO>{
 	private CategoryService categoryService;
 
 	@GetMapping("gotoEdit")
-	public ModelAndView gotoEdit(){
-		ModelAndView mav = new ModelAndView("manager/articleEdit");
-		mav.addObject("clist", categoryService.doSearchListByVO(null));
-		return mav;
+	public EResponse gotoEdit(){
+		EResponse result = EResponse.build();
+		result.setResult(categoryService.doSearchListByVO(null));
+		return result;
 	}
+	
 	@GetMapping("publish")
 	public String publish(){
 		return "manager/articleEdit";
 	}
 	
 	 @PostMapping("add")
-	 public @ResponseBody EResponse add(ArticleVO articleVO){
+	 public EResponse add(ArticleVO articleVO){
 		 EResponse result = EResponse.build("000000");
 		 try{
 			 articleService.doInsertByVO(articleVO);
@@ -107,15 +121,14 @@ public class ArticleController  extends BaseRestController<ArticleVO>{
 	  * @return
 	  */
 	 @GetMapping("/list/{status}")
-	 public ModelAndView articleList(@PathVariable String status){
-		 ModelAndView mav = new ModelAndView("manager/articleList");
+	 public EResponse articleList(@PathVariable String status){
+		 EResponse result = EResponse.build("000000");
 		 ArticleVO condition = new ArticleVO();
 		 if(!StringUtils.equals(status.trim(), "A")){
 			 condition.setStatus(status);
 		 }
-		 List<ArticleVO> list = articleService.doSearchListByVO(condition);
-		 mav.addObject("artlist", list);
-		 return mav;
+		 result.setResult(articleService.doSearchListByVO(condition));
+		 return result;
 	 }
 	
 }

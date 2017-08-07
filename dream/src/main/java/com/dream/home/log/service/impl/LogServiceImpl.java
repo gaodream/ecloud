@@ -13,7 +13,7 @@ public class LogServiceImpl extends BaseServiceImpl<LogVO> implements LogService
 
 	@Autowired
 	private LogDAO logDAO;
-
+	
 	@Override
 	public LogDAO getBaseDAO() {
 		return logDAO;

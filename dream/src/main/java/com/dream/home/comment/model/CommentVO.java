@@ -18,6 +18,8 @@ public class CommentVO extends ValueObject implements Serializable{
 	private long userId;	//用户ID
 	private long parentId;	//上级评论（有回复时存在）
 	private String deletedFlag;	//
+	private String createUser;	//创建人ID
+	private String email;	//创建人ID
 	private long createUserId;	//创建人ID
 	private String createTime;	//创建时间
 	private String remark;	//备注
@@ -26,7 +28,18 @@ public class CommentVO extends ValueObject implements Serializable{
 	private String categoryName;//类别名称
 	
 	
-	
+	public String getCreateUser() {
+		return createUser;
+	}
+	public void setCreateUser(String createUser) {
+		this.createUser = createUser;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
 	public String getCategoryCode() {
 		return categoryCode;
 	}

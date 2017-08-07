@@ -9,11 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.ecloud.framework.common.EConstants;
-import com.ecloud.framework.common.EResponse;
+import com.ecloud.framework.model.EResponse;
 import com.ecloud.framework.model.ValueObject;
 import com.ecloud.framework.service.BaseService;
 
@@ -101,7 +102,7 @@ public abstract class BaseRestController<T extends ValueObject> {
 	@ApiOperation(value="根据VO保存",notes="注意事项")
 	@RequestMapping(value ="/doSave",method=RequestMethod.POST)
 	@ApiImplicitParam(name="vo",value = "业务实体")
-	public EResponse doSave(@ModelAttribute T vo) throws Exception{
+	public EResponse doSave(@RequestBody T vo) throws Exception{
 		EResponse response = EResponse.build();
 		try {
 			this.getBaseService().doInsertByVO(vo);

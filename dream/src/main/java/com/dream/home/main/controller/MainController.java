@@ -3,8 +3,8 @@ package com.dream.home.main.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.dream.home.article.model.ArticleVO;
 import com.dream.home.article.service.ArticleService;
@@ -12,8 +12,9 @@ import com.dream.home.category.model.CategoryVO;
 import com.dream.home.category.service.CategoryService;
 import com.dream.home.comment.model.CommentVO;
 import com.dream.home.comment.service.CommentService;
+import com.ecloud.framework.model.EResponse;
 
-@Controller
+@RestController
 public class MainController {
 	
 	
@@ -25,7 +26,8 @@ public class MainController {
 	private CategoryService categoryService;
 
 	@GetMapping("/")
-	public String index(Map<String,Object> map){
+	public EResponse index(Map<String,Object> map){
+		EResponse result = EResponse.build();
 		ArticleVO artVO = new ArticleVO();
 		map.put("artCount", articleService.doSearchCount(artVO));
 		artVO.setToTop("N");
@@ -36,8 +38,8 @@ public class MainController {
 		CommentVO commentVO = new CommentVO();
 		map.put("commentCount", commentService.doSearchCount(commentVO));
 		map.put("cgCount", categoryService.doSearchCount(new CategoryVO()));
-		map.put("index", "nav-this");
-		return "views/index";
+		result.setResult(map);
+		return result;
 	}
 	
 /*	@GetMapping("/")

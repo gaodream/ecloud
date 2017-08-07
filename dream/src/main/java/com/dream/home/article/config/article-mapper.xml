@@ -97,9 +97,11 @@
 	<!--5.根据ID查询记录-->
 	<select id="doFindById" parameterType="ArticleVO"  resultType="ArticleVO">  
 		SELECT 
-		<include refid="SQL_CONTENT"/>,
-		ama.content content
+			<include refid="SQL_CONTENT"/>,
+			ama.content content,
+			aac.CATEGORY_NAME categoryName
 		FROM am_article ama 
+		LEFT JOIN am_category aac ON(aac.category_code=ama.category_code AND aac.DELETED_FLAG='N' )
 		WHERE ama.DELETED_FLAG = 'N' AND  ama.ROW_ID = #{value} 
 	</select>
 

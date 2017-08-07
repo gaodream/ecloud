@@ -29,6 +29,14 @@ public class WebConfig implements EnvironmentAware {
 	}
 	
 	@Bean
+	public ViewResolver viewResolver() {
+		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+		resolver.setPrefix(env.getProperty("spring.mvc.view.prefix"));
+		resolver.setSuffix(env.getProperty("spring.mvc.view.suffix"));
+		return resolver;
+	}
+	
+	@Bean
 	public Filter characterEncodingFilter() {
 	  CharacterEncodingFilter characterEncodingFilter =new CharacterEncodingFilter();
 	  characterEncodingFilter.setEncoding("UTF-8");

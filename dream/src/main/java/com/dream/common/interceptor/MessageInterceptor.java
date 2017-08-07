@@ -2,20 +2,10 @@ package com.dream.common.interceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.dream.home.article.service.ArticleService;
-import com.dream.home.comment.model.CommentVO;
-import com.dream.home.comment.service.CommentService;
-import com.dream.home.link.model.LinkVO;
-import com.dream.home.link.service.LinkService;
-import com.dream.home.log.service.LogService;
-import com.github.pagehelper.PageInfo;
 
 /**
  * 
@@ -25,15 +15,6 @@ import com.github.pagehelper.PageInfo;
 @Component
 public class MessageInterceptor implements HandlerInterceptor {
 	
-	@Autowired
-	private ArticleService articleService;
-	
-	@Autowired
-	private CommentService commentService;
-	@Autowired
-	private LinkService linkService;
-	@Autowired
-	private LogService logService;
 
 	/** 
      * preHandle方法是进行处理器拦截用的，顾名思义，该方法将在Controller处理之前进行调用，SpringMVC中的Interceptor拦截器是链式的，可以同时存在 
@@ -53,7 +34,7 @@ public class MessageInterceptor implements HandlerInterceptor {
     	/**
     	 * 共用信息可以放到session
     	 */
-    	HttpSession session = request.getSession();
+    /*	HttpSession session = request.getSession();
     	session.setAttribute("_tilte", "Dgao小站");
     	session.setAttribute("links", linkService.doSearchListByVO(new LinkVO()));
     	session.setAttribute("hots", articleService.doSearchHots());
@@ -66,7 +47,7 @@ public class MessageInterceptor implements HandlerInterceptor {
             modelAndView.setViewName("/errorpage/500");
         }else if(response.getStatus()==404){
             //modelAndView.setViewName("/errorpage/404");
-        }
+        }*/
     }
 
     @Override
