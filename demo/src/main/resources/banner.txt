@@ -1,0 +1,19 @@
+
+
+   SSSSSSSSSSSSSSS      YYYYYYY       YYYYYYY     XXXXXXX       XXXXXXX     FFFFFFFFFFFFFFFFFFFFFF
+ SS:::::::::::::::S     Y:::::Y       Y:::::Y     X:::::X       X:::::X     F::::::::::::::::::::F
+S:::::SSSSSS::::::S     Y:::::Y       Y:::::Y     X:::::X       X:::::X     F::::::::::::::::::::F
+S:::::S     SSSSSSS     Y::::::Y     Y::::::Y     X::::::X     X::::::X     FF::::::FFFFFFFFF::::F
+S:::::S                 YYY:::::Y   Y:::::YYY     XXX:::::X   X:::::XXX       F:::::F       FFFFFF
+S:::::S                    Y:::::Y Y:::::Y           X:::::X X:::::X          F:::::F
+ S::::SSSS                  Y:::::Y:::::Y             X:::::X:::::X           F::::::FFFFFFFFFF
+  SS::::::SSSSS              Y:::::::::Y               X:::::::::X            F:::::::::::::::F
+    SSS::::::::SS             Y:::::::Y                X:::::::::X            F:::::::::::::::F
+       SSSSSS::::S             Y:::::Y                X:::::X:::::X           F::::::FFFFFFFFFF
+            S:::::S            Y:::::Y               X:::::X X:::::X          F:::::F
+            S:::::S            Y:::::Y            XXX:::::X   X:::::XXX       F:::::F
+SSSSSSS     S:::::S            Y:::::Y            X::::::X     X::::::X     FF:::::::FF
+S::::::SSSSSS:::::S         YYYY:::::YYYY         X:::::X       X:::::X     F::::::::FF
+S:::::::::::::::SS          Y:::::::::::Y         X:::::X       X:::::X     F::::::::FF
+ SSSSSSSSSSSSSSS            YYYYYYYYYYYYY         XXXXXXX       XXXXXXX     FFFFFFFFFFF
+

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecloud.syxf.home.article.dao.ArticleDAO">
+	<!--1.查询条件-->
+	<sql id="SQL_CONDITION">
+		<if test="rowId != null and rowId != '' ">
+		 and am.row_id = #{rowId}
+		</if>
+		<if test="articleName != null and articleName != '' ">
+		 and am.article_name = #{articleName}
+		</if>
+		<if test="categoryCode != null and categoryCode != '' ">
+		 and am.category_code = #{categoryCode}
+		</if>
+		<if test="tags != null and tags != '' ">
+		 and am.tags = #{tags}
+		</if>
+		<if test="showImage != null and showImage != '' ">
+		 and am.show_image = #{showImage}
+		</if>
+		<if test="content != null and content != '' ">
+		 and am.content = #{content}
+		</if>
+		<if test="shareTimes != null and shareTimes != '' ">
+		 and am.share_times = #{shareTimes}
+		</if>
+		<if test="loveTimes != null and loveTimes != '' ">
+		 and am.love_times = #{loveTimes}
+		</if>
+		<if test="browseTimes != null and browseTimes != '' ">
+		 and am.browse_times = #{browseTimes}
+		</if>
+		<if test="author != null and author != '' ">
+		 and am.author = #{author}
+		</if>
+		<if test="status != null and status != '' ">
+		 and am.status = #{status}
+		</if>
+		<if test="toTop != null and toTop != '' ">
+		 and am.to_top = #{toTop}
+		</if>
+		<if test="publishTime != null and publishTime != '' ">
+		 and am.publish_time = #{publishTime}
+		</if>
+		<if test="deletedFlag != null and deletedFlag != '' ">
+		 and am.deleted_flag = #{deletedFlag}
+		</if>
+		<if test="createUserId != null and createUserId != '' ">
+		 and am.create_user_id = #{createUserId}
+		</if>
+		<if test="createTime != null and createTime != '' ">
+		 and am.create_time = #{createTime}
+		</if>
+		<if test="lastUpdId != null and lastUpdId != '' ">
+		 and am.last_upd_id = #{lastUpdId}
+		</if>
+		<if test="lastUpdTime != null and lastUpdTime != '' ">
+		 and am.last_upd_time = #{lastUpdTime}
+		</if>
+		<if test="remark != null and remark != '' ">
+		 and am.remark = #{remark}
+		</if>
+	</sql>
+
+	<!--2.查询内容-->
+	<sql id="SQL_CONTENT">
+		am.row_id rowId,
+		am.article_name articleName,
+		am.category_code categoryCode,
+		am.tags tags,
+		am.show_image showImage,
+		am.content content,
+		am.share_times shareTimes,
+		am.love_times loveTimes,
+		am.browse_times browseTimes,
+		am.author author,
+		am.status status,
+		am.to_top toTop,
+		am.publish_time publishTime,
+		am.deleted_flag deletedFlag,
+		am.create_user_id createUserId,
+		am.create_time createTime,
+		am.last_upd_id lastUpdId,
+		am.last_upd_time lastUpdTime,
+		am.remark remark
+	</sql>
+
+	<!--3.查询记录数-->
+	<select id="doSearchCount" parameterType="ArticleVO" resultType="java.lang.Integer">
+		SELECT COUNT(0) AS _COUNT FROM am_article am WHERE 1=1 AND DELETED_FLAG = 'N'
+		<include refid="SQL_CONDITION"/>
+	</select>
+
+	<!--4.按条件查询记录-->
+	<select id="doSearchListByVO" parameterType="ArticleVO"  resultType="ArticleVO"> 
+		SELECT 
+			<include refid="SQL_CONTENT"/>
+		FROM am_article am  WHERE am.DELETED_FLAG = 'N' 
+			<include refid="SQL_CONDITION"/>
+	</select>
+
+	<!--5.根据ID查询记录-->
+	<select id="doFindById" parameterType="Long"  resultType="ArticleVO">
+		SELECT 
+		<include refid="SQL_CONTENT"/>
+		FROM am_article am 
+		WHERE am.DELETED_FLAG = 'N' AND  am.ROW_ID = #{value} 
+	</select>
+
+	<!--6.按照VO插入-->
+	<insert  id="doInsertByVO"  parameterType="ArticleVO"> 
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="rowId">
+			SELECT DEFAULT_SEQ('DEFAULT') AS rowId FROM DUAL
+		</selectKey>
+		INSERT INTO am_article(row_id,article_name,category_code,tags,show_image,content,share_times,love_times,browse_times,author,status,to_top,publish_time,deleted_flag,create_user_id,create_time,last_upd_id,last_upd_time,remark)
+		VALUES(#{rowId},#{articleName},#{categoryCode},#{tags},#{showImage},#{content},#{shareTimes},#{loveTimes},#{browseTimes},#{author},#{status},#{toTop},#{publishTime},#{deletedFlag},#{createUserId},NOW(),#{lastUpdId},#{lastUpdTime},#{remark})
+	 </insert>
+
+	<!--7.批量插入-->
+	<insert  id="doBatchInsertByList"  parameterType="java.util.List"> 
+		INSERT INTO am_article(row_id,article_name,category_code,tags,show_image,content,share_times,love_times,browse_times,author,status,to_top,publish_time,deleted_flag,create_user_id,create_time,last_upd_id,last_upd_time,remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.rowId},#{item.articleName},#{item.categoryCode},#{item.tags},#{item.showImage},#{item.content},#{item.shareTimes},#{item.loveTimes},#{item.browseTimes},#{item.author},#{item.status},#{item.toTop},#{item.publishTime},#{item.deletedFlag},#{item.createUserId},NOW(),#{item.lastUpdId},#{item.lastUpdTime},#{item.remark})
+		</foreach>
+	</insert>
+
+	<!--8.按主键逻辑删除-->
+	<update id="doDeleteById"  parameterType="Long"> 
+		UPDATE  am_article am SET am.DELETED_FLAG = 'Y'  WHERE 1=1   AND am.ROW_ID = #{value} 
+	</update>
+
+	<!--9.按复合条件逻辑更新-->
+	<update  id="doUpdateByVO"  parameterType="ArticleVO"> 
+		UPDATE   am_article  
+		<set>
+			<if test="rowId != null">row_id=#{rowId},</if>
+			<if test="articleName != null">article_name=#{articleName},</if>
+			<if test="categoryCode != null">category_code=#{categoryCode},</if>
+			<if test="tags != null">tags=#{tags},</if>
+			<if test="showImage != null">show_image=#{showImage},</if>
+			<if test="content != null">content=#{content},</if>
+			<if test="shareTimes != null">share_times=#{shareTimes},</if>
+			<if test="loveTimes != null">love_times=#{loveTimes},</if>
+			<if test="browseTimes != null">browse_times=#{browseTimes},</if>
+			<if test="author != null">author=#{author},</if>
+			<if test="status != null">status=#{status},</if>
+			<if test="toTop != null">to_top=#{toTop},</if>
+			<if test="publishTime != null">publish_time=#{publishTime},</if>
+			<if test="deletedFlag != null">deleted_flag=#{deletedFlag},</if>
+			<if test="createUserId != null">create_user_id=#{createUserId},</if>
+			<if test="createTime != null">create_time=#{createTime},</if>
+			<if test="lastUpdId != null">last_upd_id=#{lastUpdId},</if>
+			<if test="lastUpdTime != null">last_upd_time=#{lastUpdTime},</if>
+			<if test="remark != null">remark=#{remark}</if>
+		</set>
+		WHERE  ROW_ID = #{rowId}
+	</update>
+
+	<!--10.批量修改-->
+	<update id="doBatchUpdateByList"  parameterType="java.util.List">
+		INSERT INTO am_article(row_id,article_name,category_code,tags,show_image,content,share_times,love_times,browse_times,author,status,to_top,publish_time,deleted_flag,create_user_id,create_time,last_upd_id,last_upd_time,remark)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator="," >
+			(#{item.rowId},#{item.articleName},#{item.categoryCode},#{item.tags},#{item.showImage},#{item.content},#{item.shareTimes},#{item.loveTimes},#{item.browseTimes},#{item.author},#{item.status},#{item.toTop},#{item.publishTime},#{item.deletedFlag},#{item.createUserId},NOW(),#{item.lastUpdId},#{item.lastUpdTime},#{item.remark})
+		</foreach>
+		ON DUPLICATE KEY UPDATE   
+			row_id = VALUES(row_id),
+			article_name = VALUES(article_name),
+			category_code = VALUES(category_code),
+			tags = VALUES(tags),
+			show_image = VALUES(show_image),
+			content = VALUES(content),
+			share_times = VALUES(share_times),
+			love_times = VALUES(love_times),
+			browse_times = VALUES(browse_times),
+			author = VALUES(author),
+			status = VALUES(status),
+			to_top = VALUES(to_top),
+			publish_time = VALUES(publish_time),
+			deleted_flag = VALUES(deleted_flag),
+			create_user_id = VALUES(create_user_id),
+			create_time = VALUES(create_time),
+			last_upd_id = VALUES(last_upd_id),
+			last_upd_time = VALUES(last_upd_time),
+			remark = VALUES(remark)
+	</update>
+</mapper>

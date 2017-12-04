@@ -4,10 +4,18 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import javax.annotation.PostConstruct;
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.ecloud.framework.common.EConstants;
 import com.ecloud.framework.model.EResponse;
@@ -18,41 +26,33 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 
 
-/**
- * @author gaogao
- *
- * 最佳实践：
- * 1、不要在controller中定义成员变量。
- * 2、万一必须要定义一个非静态成员变量时候，则通过注解@Scope("prototype")，将其设置为多例模式
- * 备注：
- * 单例是不安全的，会导致属性重复使用。如果不使用静态变量就没有关系，不会导致线程不安全，当然单例性能高于多例
- */
-///@Scope("prototype") 在子类中加该注解
-public abstract class BaseRestController<T extends ValueObject> {
+public abstract class BaseController<T extends ValueObject> {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(BaseRestController.class);
-    
-	@SuppressWarnings("rawtypes")
+	protected static final Logger LOG = LoggerFactory.getLogger(BaseController.class);
+
+	protected Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+	protected static final String RESULT = "result";
+
+    @SuppressWarnings("rawtypes")
 	private Class clz ;
-	@SuppressWarnings("unused")
 	private T instance ;//用于多步骤操作
 	private Type type ;
 
-	public BaseRestController() {
+	public BaseController() {
 	}
 
-	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@PostConstruct
 	public void initialize(){
-		 type = this.getClass().getGenericSuperclass();
+		type = this.getClass().getGenericSuperclass();
 		if (!(type instanceof ParameterizedType)) {
 			clz = Object.class;
 		}
 		Type param = ((ParameterizedType) type).getActualTypeArguments()[0];
 		clz = (Class)param;
 		try {
-			 instance = (T)clz.newInstance();
+			instance = (T)clz.newInstance();
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -69,48 +69,48 @@ public abstract class BaseRestController<T extends ValueObject> {
 	@ApiOperation(value="根据ID查询",notes="注意事项")
 	@ApiImplicitParam(name = "id",value = "业务ID",dataType="String",paramType = "path")
 	@GetMapping("{id}")
-	public @ResponseBody EResponse find(@PathVariable long id) {
+	public ModelAndView find(@PathVariable long id) {
 		EResponse response = EResponse.build();
 		try {
 			response.setResult(this.getBaseService().doFindById(id));
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
 		}
-		return response;
+		return new ModelAndView(this.getPath()+"Detail","result",response);
 	}
-	
+
 	@ApiOperation(value="查询列表",notes="列表信息")
 	@ApiImplicitParam(name="vo",value = "业务实体")
 	@PostMapping("list")
-	public @ResponseBody EResponse list(@RequestBody T vo ) {
+	public ModelAndView list(@RequestBody T vo ) {
 		EResponse response = EResponse.build();
 		try {
 			response.setResult(this.getBaseService().doSearchListByVO(vo));
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
 		}
-		return response;
+		return new ModelAndView(this.getPath()+"List","result",response);
 	}
 
 
 	@ApiOperation(value="分页查询列表",notes="列表信息")
 	@ApiImplicitParam(name="vo",value = "业务实体")
 	@PostMapping("page")
-	public @ResponseBody EResponse page(@RequestBody T vo ) {
+	public ModelAndView page(@RequestBody T vo ) {
 		EResponse response = EResponse.build();
 		try {
 			response.setResult(this.getBaseService().doSearchPage(vo));
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
 		}
-		return response;
+		return new ModelAndView(this.getPath()+"List","result",response);
 	}
-	
+
 
 	@ApiOperation(value="根据VO保存",notes="注意事项")
 	@ApiImplicitParam(name="vo",value = "业务实体")
 	@PostMapping("")
-	public @ResponseBody EResponse save(@RequestBody T vo) throws Exception{
+	public ModelAndView save(@RequestBody T vo) throws Exception{
 		EResponse response = EResponse.build();
 		try {
 			this.getBaseService().doInsertByVO(vo);
@@ -118,14 +118,13 @@ public abstract class BaseRestController<T extends ValueObject> {
 			LOG.error("{}",e.getMessage());
 			response.setRespCode(EConstants.HTTP.FAILED);
 		}
-
-		return 	response;
+		return 	page(instance);
 	}
-	
+
 	@ApiOperation(value="根据VO更新",notes="注意事项")
 	@ApiImplicitParam(name="vo",value = "业务实体")
 	@PutMapping("")
-	public @ResponseBody EResponse update(@RequestBody T vo) throws Exception{
+	public ModelAndView update(@RequestBody T vo) throws Exception{
 		EResponse response = EResponse.build();
 		try {
 			if(validateParam(vo)){
@@ -135,12 +134,12 @@ public abstract class BaseRestController<T extends ValueObject> {
 			LOG.error("{}",e.getMessage());
 			response.setRespCode(EConstants.HTTP.FAILED);
 		}
-		return 	response;
+		return new ModelAndView(this.getPath()+"Edit","result",response);
 	}
-	
+
 	@ApiOperation(value="根据VO删除",notes="注意事项")
 	@DeleteMapping("")
-	public @ResponseBody EResponse  delete(@RequestBody T vo) throws Exception{
+	public ModelAndView  delete(@RequestBody T vo) throws Exception{
 		EResponse response = EResponse.build();
 		try {
 			this.getBaseService().doDeleteByVO(vo);
@@ -148,13 +147,13 @@ public abstract class BaseRestController<T extends ValueObject> {
 			LOG.error("{}",e.getMessage());
 			response.setRespCode(EConstants.HTTP.FAILED);
 		}
-		return 	response;
+		return 	page(instance);
 	}
-	
+
 	@ApiOperation(value="根据ID删除",notes="注意事项")
 	@ApiImplicitParam(name="id",value = "业务ID",dataType="String",paramType="path")
 	@DeleteMapping("{id}")
-	public @ResponseBody EResponse  delete(@PathVariable long id) throws Exception{
+	public ModelAndView  delete(@PathVariable long id) throws Exception{
 		EResponse response = EResponse.build();
 		try {
 			this.getBaseService().doDeleteById(id);
@@ -162,36 +161,36 @@ public abstract class BaseRestController<T extends ValueObject> {
 			LOG.error("{}",e.getMessage());
 			response.setRespCode(EConstants.HTTP.FAILED);
 		}
-		return 	response;
+		return 	page(instance);
 	}
-	
+
 
 	//增加明细行
 	public void doAddDetailRow()  throws Exception{
-	    
+
 	}
 
 	//日志处理
 	public String addOpLog(){
-	    return "";
+		return "";
 	}
 
 	public void doExportExcelInit() throws Exception{
-	
+
 	}
 
 	public void doPrintInit()  throws Exception{
-	   
+
 	}
-	
+
 	public void doExportExcel() throws Exception{
-	   
+
 	}
-	
+
 	public void doPrint() throws Exception{
-	    
+
 	}
-	
+
 	protected void clearSession() throws Exception{
 	}
 
@@ -215,7 +214,9 @@ public abstract class BaseRestController<T extends ValueObject> {
 		}*/
 	}
 
+
 	public abstract BaseService<T> getBaseService();
-	
-	
+
+	public abstract String getPath();
+
 }
